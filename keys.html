@@ -1,0 +1,40 @@
+<html>
+    <head></head>
+    <body>
+        <form action="/keys/add" method="POST">            
+            <table>
+                <thead>
+                    <th>User</th>
+                    <th>API Key</th>
+                    <th>Secret</th>
+                    <th>Comment</th>
+                    <th>QPS (every 10 minutes)</th>
+                    <th>Graph</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                {% for key in keys %}
+                    <tr>
+                        <td><a href="http://vkontakte.ru/id{{key.user_id}}" target="_blank">{{key.user_id}}</a></td>
+                        <td>{{key.api_key}}</td>
+                        <td>{{key.secret}}</td>
+                        <td>{{key.comment}}</td>
+                        <td>{{key.qps|floatformat:2}} ({{key.count}})</td>
+                        <td><img src="/key/{{key.key}}/stat.png" /></td>
+                        <td><a href='/key/{{key.key}}/delete'>[x]</a></td>
+                    </tr>
+                {% endfor %}
+                    <tr>
+                        <td><input name="user_id" /></td>
+                        <td><input name="api_key" /></td>
+                        <td><input name="secret" /></td>
+                        <td><input name="comment" /></td>
+                        <td><input type="submit" /></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </body>    
+</html>

@@ -1,0 +1,4 @@
+cron:
+- description: Key stats updated
+  url: /keys/update_stats
+  schedule: every 10 minutes
