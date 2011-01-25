@@ -140,7 +140,8 @@ class SignData(AppHandler):
 
 
 application = webapp.WSGIApplication(
-                                     [('/sign_data', SignData),
+                                     [
+                                      ('/sign_data', SignData),
                                       ('/keys', KeysList),
                                       ('/keys/add', AddKey),
                                       ('/keys/update_stats', UpdateKeyStats),

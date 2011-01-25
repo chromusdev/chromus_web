@@ -10,8 +10,15 @@ handlers:
 - url: /js
   static_dir: js
 
+- url: /swf
+  static_dir: swf
+
 - url: /images
   static_dir: images
+
+- url: /sm2_iframe
+  static_files: sm2_iframe.html
+  upload: sm2_iframe.html
 
 - url: /.*
   script: chromus.py
