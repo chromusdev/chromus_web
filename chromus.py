@@ -19,8 +19,13 @@ class AppHandler(webapp.RequestHandler):
         self.response.out.write(template.render(path, data))
 
     def render_json(self, data):
+        response = json.dumps(data)
+
+        if self.request.get('callback'):
+            response = "%s(%s)" % (self.request.get('callback'), response)
+
         self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(json.dumps(data))
+        self.response.out.write(response)
 
 class VkKey(db.Model):
     user_id = db.IntegerProperty()
@@ -127,20 +132,36 @@ class SignData(AppHandler):
 
         logging.info("Track: %s" % track)
 
-        substs = (vk_key.user_id, vk_key.api_key, track, vk_key.secret)
+        substs = (vk_key.user_id, vk_key.api_key, self.request.get('callback'), track, vk_key.secret)
 
-        md5_string = "%sapi_id=%scount=10format=jsonmethod=audio.searchq=%stest_mode=1%s" % substs
+        md5_string = "%sapi_id=%scallback=%scount=10format=jsonmethod=audio.searchq=%ssort=2test_mode=1%s" % substs
 
         signed_data = md5.new(md5_string.encode('utf-8')).hexdigest()
 
-        self.render_json({'api_key':vk_key.api_key, 'signed_data':signed_data})
+        self.render_json({'api_key':vk_key.api_key, 'signed_data':signed_data, 'sign_string': md5_string})
 
     def get(self):
         self.post()
 
 
+class MainPage(AppHandler):
+    def get(self):
+        self.render_template("index.html", {});
+
+class PageHandler(AppHandler):
+    def get(self, page):
+        self.render_template(page+".html", {});
+
+
+class VkInvite(AppHandler):
+    def get(self, page):
+        self.render_template("vk_invites.html")
+
+
 application = webapp.WSGIApplication(
                                      [
+                                      ('/', MainPage),
+                                      ('/page/([^/]+)', PageHandler),
                                       ('/sign_data', SignData),
                                       ('/keys', KeysList),
                                       ('/keys/add', AddKey),
