@@ -26,23 +26,23 @@
         <script>          
             var sounds = [];
 
-            function createSound(id, url, useFlash) {
+            function createSound(id, url) {
                 var sound = soundManager.createSound({
                     id: id,
-                    url: url,
-                    useFlash: useFlash,
-                    onfinish: function(){
-                        console.log("Finished");
-
-                        this.finished = true;
-
-                        postMessageJSON({ method: "finished" });
-                    }
+                    url: url
                 });
 
                 sound.onposition(1, function() {
                     postMessageJSON({method:'startPlaying', id: this.sID});
                 });
+
+                sound.onplay = function() { 
+                }
+
+                sound.onfinish = function() { 
+                    postMessageJSON({ method:'finished' });
+                    delete currentSound; 
+                }
 
                 sound.finished = false;
                     
@@ -59,7 +59,7 @@
             }
             
             function postMessageJSON(data) {
-                data.method = "sm2:"+data.method;
+                data.method = "sm2:" + data.method;                
                 var json = JSON.stringify(data);
 
                 //console.log('Sending message:', json);
@@ -74,21 +74,13 @@
                     return {
                         duration: current_sound.durationEstimate / 1000,
                         played: current_sound.position / 1000,
-                        buffered: ((current_sound.bytesLoaded/current_sound.bytesTotal)*current_sound.durationEstimate) / 1000.0,                        
-                        paused: current_sound.paused,
-                        finished: current_sound.finished,
-                        id: current_sound.sID,
-                        url: current_sound.url,
-                        playing: true
+                        buffered: ((current_sound.bytesLoaded/current_sound.bytesTotal)*current_sound.durationEstimate) / 1000.0
                     }
                 } else {
                     return {
                         duration: 0,
                         played: 0,
-                        buffered: 0,
-                        paused: true,
-                        finished: true,
-                        playing: false
+                        buffered: 0
                     }
                 }
             }
@@ -116,19 +108,15 @@
                         }
 
                         if (!sound) {
-                            sound = createSound(msg.track, msg.url, msg.use_flash); 
+                            sound = createSound(msg.track, msg.url); 
                         }
-                        
-                        for (var i=0; i < sounds.length; i++) {
-                            if (sounds[i].sID != msg.track) {
-                                sounds[i].stop();
-                            }
+
+                        if (current_sound != sound) { 
+                            soundManager.stopAll();
                         }
 
                         current_sound = sound;
-                        
-                        sound.finished = false;
-
+                                                
                         sound.play();
 
                         break;
@@ -142,8 +130,6 @@
                             sound = createSound(msg.track, msg.url); 
                         }
 
-                        sound.finished = false;
-
                         sound.load();
 
                         break;                        
@@ -152,6 +138,13 @@
                         console.log("iFrame:::Pause:", msg);
 
                         soundManager.pauseAll();                    
+
+                        break; 
+
+                    case "stop":
+                        console.log("iFrame:::Stop:", msg);
+
+                        soundManager.stopAll();
 
                         break; 
 
@@ -165,7 +158,7 @@
                         break;
 
                     default:
-                        break;
+                        console.log("iFrame:::Unknown message:", evt.data);                        
                 }
             }
 
@@ -175,8 +168,8 @@
                 window.attachEvent("onmessage", listener);
             }
         </script>
-    </head>        
-    <body>
+    </head>
+    <body>        
     </body>
 </html>
 
