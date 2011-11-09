@@ -21,8 +21,10 @@ class AppHandler(webapp.RequestHandler):
     def render_json(self, data):
         response = json.dumps(data)
 
-        if self.request.get('callback'):
-            response = "%s(%s)" % (self.request.get('callback'), response)
+        callback = self.request.get('_callback') or self.request.get('callback')
+
+        if callback:
+            response = "%s(%s)" % (callback, response)
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(response)
@@ -158,6 +160,37 @@ class VkInvite(AppHandler):
         self.render_template("vk_invites.html")
 
 
+import cgi
+import urllib
+from google.appengine.ext import webapp
+from google.appengine.api import urlfetch
+
+
+class Proxy(AppHandler):
+    def get(self):
+        method = self.request.get('_method') or 'GET'
+        url = self.request.get('_url')
+        
+        data = []
+
+        for arg in self.request.arguments():
+            if arg not in ['_method', '_url', '_callback']:
+                data.append("%s=%s" % (arg, self.request.get(arg)))
+
+        data = "&".join(data)
+
+        if method is 'GET':
+            url = url + '?' + data
+            payload = None
+        else:
+            payload = data
+
+
+        result = urlfetch.fetch(url=url, method=getattr(urlfetch, method), payload = payload)
+    
+        self.render_json({ 'response': result.content, 'method': method, 'payload': payload })
+
+
 application = webapp.WSGIApplication(
                                      [
                                       ('/', MainPage),
@@ -167,7 +200,9 @@ application = webapp.WSGIApplication(
                                       ('/keys/add', AddKey),
                                       ('/keys/update_stats', UpdateKeyStats),
                                       ('/key/([^/]+)?/delete', DeleteKey),
-                                      ('/key/([^/]+)?/stat.png', KeyGraph)],
+                                      ('/key/([^/]+)?/stat.png', KeyGraph),
+                                      ('/proxy', Proxy)
+                                      ],
                                      debug=True)
 
 def main():
