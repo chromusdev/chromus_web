@@ -186,9 +186,9 @@ class Proxy(AppHandler):
             payload = data
 
 
-        result = urlfetch.fetch(url=url, method=getattr(urlfetch, method), payload = payload)
-    
-        self.render_json({ 'response': result.content, 'method': method, 'payload': payload })
+        result = urlfetch.fetch(url=url, method=getattr(urlfetch, method), payload = payload, follow_redirects = False)
+
+        self.render_json({ 'response': result.content, 'method': method, 'payload': payload, 'headers':dict(result.headers), 'status_code':result.status_code })
 
 
 application = webapp.WSGIApplication(
