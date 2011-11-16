@@ -24,7 +24,7 @@ handlers:
   static_dir: chromus
 
 - url: /.*
-  script: chromus.py
+  script: main.py
 
 - url: /_ah/warmup.*
   script: warmup.py
