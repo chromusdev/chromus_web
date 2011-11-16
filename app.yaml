@@ -20,6 +20,9 @@ handlers:
   static_files: sm2_iframe.html
   upload: sm2_iframe.html
 
+- url: /chromus
+  static_dir: chromus
+
 - url: /.*
   script: chromus.py
 

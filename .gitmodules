@@ -1,0 +1,3 @@
+[submodule "chromus"]
+	path = chromus
+	url = git://github.com/chromus/chromus.git
