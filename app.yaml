@@ -1,6 +1,7 @@
-application: chromusapp
-version: alpha
-runtime: python
+application: chromusapp-v2
+version: beta
+runtime: python27
+threadsafe: true
 api_version: 1
 
 handlers:
@@ -24,13 +25,7 @@ handlers:
   static_dir: chromus
 
 - url: /.*
-  script: main.py
-
-- url: /_ah/warmup.*
-  script: warmup.py
+  script: main.app
 
 builtins:
 - datastore_admin: on
-
-inbound_services:
-- warmup
